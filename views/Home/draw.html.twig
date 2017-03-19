@@ -1,0 +1,281 @@
+{% extends('layout.html.twig') %}
+{% block content %}
+    <div class="container" style="padding-top: 15px;">
+        <div class="row">
+            <div class="col-xs-10">
+                <svg id="arena" style="width: 100%; height: 900px;" viewBox="0 0 1800 1000"></svg>
+            </div>
+            <div class="col-xs-2">
+                <button id="btn_upscale" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-zoom-in"></span> </button>
+                <button id="btn_downscale" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-zoom-out"></span></button>
+                <span id="display_scale"></span>
+                <hr>
+                <button id="btn_add_point" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-screenshot"></span></button>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block customCSS %}
+    <style>
+        #arena{
+            background: #fff;
+            border-radius: 2px;
+            display: inline-block;
+            margin: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        .poly{
+            cursor: move;
+        }
+        .poly{
+            fill: #87ff87
+        }
+        .circle{
+            cursor: move;
+        }
+        .path{
+            stroke: #6e73ff;
+            stroke-width: 2px;
+        }
+        .path:hover{
+            cursor: crosshair;
+            stroke-width: 4px;
+            stroke: #156bff;
+        }
+        #poly_1{
+            top: 25px;
+        }
+    </style>
+{% endblock %}
+{% block customJS %}
+    <script
+            src="https://code.jquery.com/jquery-3.2.0.min.js"
+            integrity="sha256-JAW99MJVpJBGcbzEuXk4Az05s/XyDdBomFqNlM3ic+I="
+            crossorigin="anonymous"></script>
+    <script>
+        // Attr
+        var currentCircle = -1;
+        var currentPoly = -1;
+        var scale = 1;
+        var svg =  document.querySelector('svg');
+        var pt =svg.createSVGPoint();
+        var addPoint = false;
+        var keycodes = {
+            17: false //ctrl linux
+        };
+
+        // Proto
+        var polyRender = {
+            poly: {},
+            target: "",
+            id: "",
+            setParams: function(params){
+                this.poly = params.poly;
+                this.target = params.target;
+                this.id = params.id;
+            },
+            renderPoint: function(){
+                var pointElem = "";
+                var points = this.poly.points;
+                for(var i in points){
+                    var point = points[i];
+                    pointElem += '<circle cx="'+point.x.toFixed(2) +'" cy="'+point.y.toFixed(2)+'" r="5" stroke="#0079ff" stroke-width="3" fill="#54c6ff" data-point="'+i+'" class="circle" />';
+                }
+                return pointElem;
+            },
+            renderPath: function(){
+                var pathElem = "";
+                var lines = this.poly.line();
+                for(var i in lines){
+                    var line = lines[i].path;
+                    var pointA = line[0];
+                    var pointB = line[1];
+                    var M = 'M '+pointA.x.toFixed(2)+' '+pointA.y.toFixed(2);
+                    var L = 'L '+pointB.x.toFixed(2)+' '+pointB.y.toFixed(2);
+                    pathElem += '<path d="'+M+' '+L+'" data-path="'+i+'" class="path"></path>';
+                }
+                return pathElem;
+            },
+            renderPoly: function(){
+                var poly = "";
+                var points = this.poly.points;
+                var point = points[0];
+                var M = 'M '+point.x.toFixed(2)+' '+point.y.toFixed(2);
+                var L = 'L';
+                for(var i = 1; i < points.length; i++){
+                    var point = points[i];
+                    L +=' '+point.x.toFixed(2)+' '+point.y.toFixed(2);
+                }
+                poly += '<path d="'+M+' '+L+'" data-path="'+i+'" class="poly"></path>';
+                return poly;
+            },
+            render: function(){
+                var container = document.getElementById(this.target);
+                container.innerHTML = "";
+                var block = '<g id="poly_1">';
+                var pointElement = this.renderPoint();
+                var pathElem = this.renderPath();
+                var polyElem = this.renderPoly();
+                block += polyElem+pathElem+pointElement+'</g>';
+                container.innerHTML = block;
+            }
+        };
+        var poly = {
+            points: [
+                {x: 50, y: 5},
+                {x: 200, y: 5},
+                {x: 200, y: 110},
+                {x: 50, y: 110}
+            ],
+            line: function() {
+                var paths = [];
+                var length = this.points.length;
+                for(var i = 0; i < length; i++){
+                    var next = (i+1 >= length ? 0 : i+1);
+                    var path = {
+                        path:[this.points[i], this.points[next]]
+                    };
+                    paths.push(path);
+                }
+                return paths;
+            },
+            g: function(){
+                var g={x:0, y:0};
+                var minX = this.points[0].x;
+                var maxX = this.points[0].x;
+                var minY = this.points[0].y;
+                var maxY = this.points[0].y;
+                for(var i = 0; i < this.points.length; i++){
+                    minX = (this.points[i].x < minX ? this.points[i].x : minX);
+                    maxX = (this.points[i].x > maxX ? this.points[i].x : maxX);
+                    minY = (this.points[i].y < minY ? this.points[i].y : minY);
+                    maxY = (this.points[i].y > maxY ? this.points[i].y : maxY);
+                }
+                g.x = ((maxX-minX)/2)+minX;
+                g.y = ((maxY-minY)/2)+minY;
+                return g;
+            }
+        };
+        var params = {
+            poly: poly,
+            target: "arena",
+            id: "block"
+        };
+
+        // FUNCTION
+        var setScale = function (newScale) {
+            scale = newScale;
+            var elem = $('#arena');
+            var viewBox = '0 0';
+            var w = parseInt(elem.width()*scale);
+            var h = parseInt(elem.height()*scale);
+            viewBox+=' '+w+' '+h;
+            elem.attr('viewBox', viewBox);
+            $('#display_scale').html(scale.toFixed(2));
+        };
+        var movePoint = function(pt, x, y){
+            block.poly.points[pt].x = x;
+            block.poly.points[pt].y = y;
+            block.render();
+        };
+        var movePoly = function(x, y){
+            var g = block.poly.g();
+            for(var i = 0; i < block.poly.points.length; i++){
+                block.poly.points[i].x = x+parseInt(block.poly.points[i].x-g.x);
+                block.poly.points[i].y = y+parseInt(block.poly.points[i].y-g.y);
+            }
+            block.render();
+        };
+        function cursorPoint(evt){
+            pt.x = evt.clientX; pt.y = evt.clientY;
+            return pt.matrixTransform(svg.getScreenCTM().inverse());
+        };
+
+        // INIT
+        setScale(1);
+        var block = polyRender;
+        block.setParams(params);
+        block.render();
+
+        // EVENT
+        $('#arena').on('mousedown', '.circle', function(){
+            if(keycodes[17]){
+                block.poly.points.splice($(this).data('point'), 1);
+                block.render();
+            }else{
+                currentCircle = $(this).data('point');
+            }
+
+        });
+        $('#arena').on('mousedown', '.poly', function(){
+            currentPoly = 0;
+        });
+        $(document).on('mouseup', function(){
+            currentCircle = -1;
+            currentPoly = -1;
+        });
+        $('#arena').on('mousemove', function(evt){
+            var loc = cursorPoint(evt);
+            var x = loc.x;
+            var y = loc.y;
+            if(currentCircle >= 0){
+                movePoint(currentCircle, x, y);
+            }
+            if(currentPoly >= 0){
+                movePoly(x, y);
+            }
+        });
+        $('#btn_upscale').on('click', function(){
+            setScale(scale-0.1);
+        });
+        $('#btn_downscale').on('click', function(){
+            setScale(scale+0.1);
+        });
+        $('#btn_add_point').on('click', function(){
+            addPoint = addPoint==false;
+        });
+        $('#arena').on('click', '.path', function(evt){
+            var indexPath = $(this).data('path');
+            var loc = cursorPoint(evt);
+            var newPoint = {
+                x: loc.x,
+                y: loc.y
+            };
+            var points = [];
+            for(var i = 0;i < block.poly.points.length; i++ ){
+                var p = block.poly.points[i];
+                if(i == indexPath+1){
+                    points.push(newPoint);
+                }
+                points.push(p);
+            }
+            if(indexPath+1 == block.poly.points.length){
+                points.push(newPoint);
+            }
+            block.poly.points = points;
+            block.render();
+
+        });
+        $('#arena').on('mouseover', '.circle', function(evt){
+            if(keycodes[17]){
+                $('.circle').css('cursor', 'crosshair')
+            } else {
+                $('.circle').css('cursor', 'move')
+            }
+        });
+        $(document).on( "keydown",function(evt) {
+            if(keycodes[evt.which] != undefined){
+                keycodes[evt.which] = true;
+            }
+            $('#arena').css('cursor', 'crosshair')
+        });
+        $(document).on( "keyup",function(evt) {
+            $('#arena').css('cursor', 'default');
+            if(keycodes[evt.which] != undefined){
+                keycodes[evt.which] = false;
+            }
+        });
+
+    </script>
+{% endblock %}

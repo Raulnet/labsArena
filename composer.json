@@ -1,0 +1,18 @@
+{
+    "require": {
+        "twig/twig": "^2.0",
+        "silex/silex": "~2.0",
+        "symfony/dependency-injection": "^3.2",
+        "symfony/twig-bridge": "^3.2",
+        "symfony/form": "^3.2",
+        "symfony/security-csrf": "^3.2",
+        "symfony/security": "^3.2",
+        "symfony/validator": "^3.2",
+        "symfony/config": "^3.2",
+        "symfony/console": "^3.2",
+        "symfony/asset": "^3.2"
+    },
+    "autoload": {
+        "psr-4": {"labs\\": "src"}
+    }
+}
