@@ -9,6 +9,7 @@
 namespace labs\Controller;
 
 use Silex\Application;
+use Symfony\Component\HttpFoundation\Request;
 
 class AppController extends AbstractController
 {
@@ -18,7 +19,9 @@ class AppController extends AbstractController
      */
     public function indexAction(Application $app){
 
-        return $this->twig($app)->render('/Home/index.html.twig', []);
+        return $this->twig($app)->render('/Home/index.html.twig', [
+
+        ]);
     }
 
     /**
@@ -28,4 +31,36 @@ class AppController extends AbstractController
     public function drawAction(Application $app){
         return $this->twig($app)->render('/Home/draw.html.twig', []);
     }
+
+    /**
+     * @param Application $app
+     * @param Request $request
+     * @return string
+     */
+    public function svgAction(Application $app, Request $request){
+
+        if($request->getMethod() == 'POST'){
+            $data = $request->getContent();
+            dd($data);
+        }
+        $block = [
+            ['label' => 'A',
+                'seats' => [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+            ],
+            ['label' => 'B',
+                'seats' => [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+            ],
+            ['label' => 'C',
+                'seats' => [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+            ],
+            ['label' => 'D',
+                'seats' => [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+            ]
+        ];
+
+        return $this->twig($app)->render('/Home/svg.html.twig', [
+            'block' => $block
+        ]);
+    }
+
 }

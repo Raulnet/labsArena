@@ -11,11 +11,14 @@
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li class="active">
-                    <a class="nav-link" href="{{ path('home') }}">Home <span class="sr-only">(current)</span></a>
+                <li class="{% if currentPage == "home" %}active{% endif %}">
+                    <a class="nav-link" href="{{ path('home') }}">Home {% if currentPage == "home" %}<span class="sr-only">(current)</span>{% endif %}</a>
+                </li>
+                <li class="{% if currentPage == "draw" %}active{% endif %}">
+                    <a class="nav-link" href="{{ path('draw') }}">draw {% if currentPage == "draw" %}<span class="sr-only">(current)</span>{% endif %}</a>
                 </li>
                 <li>
-                    <a class="nav-link" href="{{ path('draw') }}">draw</a>
+                    <a class="nav-link" href="{{ path('svg') }}">svg {% if currentPage == "svg" %}<span class="sr-only">(current)</span>{% endif %}</a>
                 </li>
             </ul>
         </div>

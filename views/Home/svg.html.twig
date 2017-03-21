@@ -1,0 +1,126 @@
+{% extends('layout.html.twig') %}
+{% set currentPage = "svg" %}
+{% block content %}
+    <div class="col-xs-9">
+        <div id="draw_container">
+            <svg id="block_container" style="width: 100%; height: 900px;" viewBox="0 0 1800 1000"></svg>
+        </div>
+    </div>
+    <div class="col-xs-3">
+        <div id="display-event" class="form-group"></div>
+        <hr>
+        <div class="form-group">
+            <button id="btn_action" class="btn btn-primary">action</button>
+        </div>
+        <div class="form-group">
+            <label class="label_slider col">rotate <span id="counter_rotate">0°</span></label>
+            <input type="text" class="slider_rotate" value="0">
+        </div>
+        <hr>
+        <div class="form-group">
+            <label class="label_slider col">A <span id="counter_a">0</span></label>
+            <input type="text" class="slider_a col" value="0">
+        </div>
+        <hr>
+        <div class="form-group">
+            <label class="label_slider col">Column <span id="counter_column">< 10.5 ></span></label>
+            <input type="text" class="slider_column col" value="10.5">
+        </div>
+        <hr>
+    </div>
+{% endblock %}
+{% block customCSS %}
+    <link href="{{ asset('lib/slider/css/slider.css') }}" type="text/css" rel="stylesheet">
+    <style>
+        #block_container{
+            border: 2px dashed #CCC;
+        }
+        .seat:hover{
+            fill: #4da6db
+        }
+    </style>
+{% endblock %}
+{% block customJS %}
+    <script
+            src="https://code.jquery.com/jquery-3.2.0.min.js"
+            integrity="sha256-JAW99MJVpJBGcbzEuXk4Az05s/XyDdBomFqNlM3ic+I="
+            crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="{{ asset('lib/slider/js/bootstrap-slider.js') }}"></script>
+    <script>
+        // ATTR
+        var block = {{ block|json_encode()|raw }};
+        var rayon = 20;
+        var stroke = 3;
+        var axe = 0.00;
+        var column = 10;
+    </script>
+    <script>
+        // FUNCTION
+        var render = function(){
+            var container = $('#block_container');
+            var template = '';
+            // init
+            container.html(template);
+            template = '<g id="block_group" transform = "rotate(0 0 0)">';
+            for(var iRow = 0; iRow < block.length; iRow++){
+                var row = block[iRow];
+                for(var iSeat = 0; iSeat < row.seats.length; iSeat++){
+                    var seat = row.seats[iSeat];
+                    var x =iSeat*(rayon*2)+rayon+stroke;
+                    var col = iSeat-column;
+                    var y =(iRow*(rayon*2))+((col*col)*axe);
+                    template += '<circle class="seat" cx="'+x+'" cy="'+y+'" r="'+rayon+'" stroke="#0079ff" stroke-width="'+stroke+'" fill="#54c6ff" />';
+                    var y = y-stroke+(rayon/2);
+                    template += '<text x="'+x+'" y="'+y+'" font-size="'+rayon*1.2+'" text-anchor="middle" fill="#0055ff">'+seat+' </text>'
+                }
+            }
+            template += '</g>';
+            container.html(template);
+        };
+        var setRotate = function(angle) {
+            var elem =  $('#block_group');
+            var width = elem[0].getBoundingClientRect().width;
+            var height = elem[0].getBoundingClientRect().height;
+            elem.attr('transform', 'rotate(' + angle + ' '+ parseInt(448/2)+' '+ parseInt(119/2)+')');
+
+        };
+    </script>
+    <script>
+        $(document).ready(function () {
+            // INIT
+            render();
+            //EVENT
+            $('.slider_a').slider({
+                min: -2,
+                max: 2,
+                step: 0.01,
+                value: 0
+            }).on('slide', function(){
+                axe = parseFloat($(this).val()).toFixed(2);
+                $('#counter_a').html(parseFloat(axe).toFixed(2));
+                render();
+            });
+            $('.slider_column').slider({
+                min: 0,
+                max: 15,
+                step: 0.1,
+                value: 7.5
+            }).on('slide', function(){
+                column = parseFloat($(this).val()).toFixed(2);
+                $('#counter_column').html('<'+parseFloat(column).toFixed(2)+'>');
+                render();
+            });
+            $('.slider_rotate').slider({
+                min: -180,
+                max: 180,
+                step: 0.1,
+                value: 0
+            }).on('slide', function(){
+                var angle = parseFloat($(this).val());
+                $('#counter_rotate').html(angle.toFixed(2)+'°');
+                setRotate(angle);
+            });
+        });
+    </script>
+{% endblock %}
