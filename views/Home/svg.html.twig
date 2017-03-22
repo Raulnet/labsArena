@@ -7,11 +7,26 @@
         </div>
     </div>
     <div class="col-xs-3">
-        <div id="display-event" class="form-group"></div>
+        <div class="form-group">
+            <label>
+                <input class="radio_seat" type="radio" name="seat" value="circle" >
+                circle |
+            </label>
+            <label>
+                <input class="radio_seat" type="radio" name="seat" value="rect" >
+                rect |
+            </label>
+            <label>
+                <input class="radio_seat" type="radio" name="seat" value="seat" checked>
+                seat
+            </label>
+        </div>
         <hr>
         <div class="form-group">
-            <button id="btn_action" class="btn btn-primary">action</button>
+            <label class="label_slider col">margin <span id="counter_margin">0px</span></label>
+            <input type="text" class="slider_margin" value="0">
         </div>
+        <hr>
         <div class="form-group">
             <label class="label_slider col">rotate <span id="counter_rotate">0°</span></label>
             <input type="text" class="slider_rotate" value="0">
@@ -23,8 +38,8 @@
         </div>
         <hr>
         <div class="form-group">
-            <label class="label_slider col">Column <span id="counter_column">< 10.5 ></span></label>
-            <input type="text" class="slider_column col" value="10.5">
+            <label class="label_slider col">Column <span id="counter_column">< 7.5 ></span></label>
+            <input type="text" class="slider_column col" value="7.5">
         </div>
         <hr>
     </div>
@@ -53,37 +68,68 @@
         var rayon = 20;
         var stroke = 3;
         var axe = 0.00;
-        var column = 10;
+        var column = 7.5; // countSeat/2
+        var margin = 0;
+        var angle = 0;
+        var templateSeat = 'seat';
     </script>
     <script>
         // FUNCTION
+        var getTemplateSeat = function(seat, iSeat, iRow){
+            var template = '';
+            var x =iSeat*(rayon*2)+rayon+stroke+(margin*iSeat);
+            var col = iSeat-column;
+            var y =(iRow*(rayon*2))+((col*col)*axe)+(margin*iRow);
+            if(templateSeat == 'circle'){
+                template += '<circle class="seat" cx="'+x+'" cy="'+y+'" r="'+rayon+'" stroke="#0079ff" stroke-width="'+stroke+'" fill="#54c6ff" />';
+                var y = y-stroke+(rayon/2);
+                template += '<text x="'+x+'" y="'+y+'" font-size="'+rayon*1.2+'" text-anchor="middle" fill="#0055ff">'+seat+' </text>';
+            }
+            if(templateSeat == 'rect'){
+                x-=rayon;
+                y-=rayon;
+                template += '<rect class="seat" x="'+x+'" y="'+y+'" width="'+rayon*2+'" height="'+rayon*2+'" stroke="#0079ff" stroke-width="'+stroke+'" fill="#54c6ff" />';
+                x+=rayon;
+                y+=rayon*1.4;
+                template += '<text x="'+x+'" y="'+y+'" font-size="'+rayon*1.2+'" text-anchor="middle" fill="#0055ff">'+seat+' </text>';
+            }
+            if(templateSeat == 'seat'){
+                x-=rayon;
+                y-=rayon;
+                var Xcurve = x+rayon*2;
+                var yCurve = y-20;
+                var M = 'M '+x+' '+y; // x+stroke y
+                var C =  'C '+x+' '+yCurve+', '+Xcurve+' '+yCurve+', '+Xcurve+' '+y; //'C x+stroke -rayon, 33 10, 33 30';
+                var L = 'l 0 30 l-40 0 l 0 -30';
+                template += '<path d="'+M+' '+C+' '+L+'" stroke="#0079ff" stroke-width="'+stroke+'" fill="#54c6ff"/>';
+                x+=rayon;
+                y+=rayon;
+                var xRotate = x+stroke;
+                var yRotate = y-rayon/2;
+
+                template += '<text x="'+x+'" y="'+y+'" font-size="'+rayon*1.2+'" text-anchor="middle" fill="#0055ff" transform="rotate('+angle*-1+' '+xRotate+' '+yRotate+')">'+seat+' </text>';
+            }
+
+            return template;
+
+        };
         var render = function(){
             var container = $('#block_container');
             var template = '';
             // init
             container.html(template);
-            template = '<g id="block_group" transform = "rotate(0 0 0)">';
+            var height = (block.length*40)/2;
+            var width = (15*40)/2;
+            template = '<g id="block_group" transform = "rotate(' + angle + ' '+ width+' '+ height+')">';
             for(var iRow = 0; iRow < block.length; iRow++){
                 var row = block[iRow];
                 for(var iSeat = 0; iSeat < row.seats.length; iSeat++){
                     var seat = row.seats[iSeat];
-                    var x =iSeat*(rayon*2)+rayon+stroke;
-                    var col = iSeat-column;
-                    var y =(iRow*(rayon*2))+((col*col)*axe);
-                    template += '<circle class="seat" cx="'+x+'" cy="'+y+'" r="'+rayon+'" stroke="#0079ff" stroke-width="'+stroke+'" fill="#54c6ff" />';
-                    var y = y-stroke+(rayon/2);
-                    template += '<text x="'+x+'" y="'+y+'" font-size="'+rayon*1.2+'" text-anchor="middle" fill="#0055ff">'+seat+' </text>'
+                    template += getTemplateSeat(seat, iSeat, iRow);
                 }
             }
             template += '</g>';
             container.html(template);
-        };
-        var setRotate = function(angle) {
-            var elem =  $('#block_group');
-            var width = elem[0].getBoundingClientRect().width;
-            var height = elem[0].getBoundingClientRect().height;
-            elem.attr('transform', 'rotate(' + angle + ' '+ parseInt(448/2)+' '+ parseInt(119/2)+')');
-
         };
     </script>
     <script>
@@ -93,12 +139,22 @@
             //EVENT
             $('.slider_a').slider({
                 min: -2,
-                max: 2,
+                max: 3,
                 step: 0.01,
                 value: 0
             }).on('slide', function(){
                 axe = parseFloat($(this).val()).toFixed(2);
                 $('#counter_a').html(parseFloat(axe).toFixed(2));
+                render();
+            });
+            $('.slider_margin').slider({
+                min: 0,
+                max: 20,
+                step: 1,
+                value: 0
+            }).on('slide', function(){
+                margin = parseInt($(this).val());
+                $('#counter_margin').html(margin+'px');
                 render();
             });
             $('.slider_column').slider({
@@ -117,9 +173,14 @@
                 step: 0.1,
                 value: 0
             }).on('slide', function(){
-                var angle = parseFloat($(this).val());
+                angle = parseFloat($(this).val());
                 $('#counter_rotate').html(angle.toFixed(2)+'°');
-                setRotate(angle);
+                render();
+            });
+            $('.radio_seat').on('click', function(){
+               templateSeat = $(this).val();
+               console.log(templateSeat);
+               render();
             });
         });
     </script>
