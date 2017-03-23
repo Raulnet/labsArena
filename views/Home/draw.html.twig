@@ -1,18 +1,18 @@
 {% extends('layout.html.twig') %}
 {% set currentPage = "draw" %}
 {% block content %}
-    <div class="container" style="padding-top: 15px;">
-        <div class="row">
-            <div class="col-xs-10">
-                <svg id="arena" style="width: 100%; height: 900px;" viewBox="0 0 1800 1000"></svg>
-            </div>
-            <div class="col-xs-2">
-                <button id="btn_upscale" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-zoom-in"></span> </button>
-                <button id="btn_downscale" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-zoom-out"></span></button>
-                <span id="display_scale"></span>
-                <hr>
-                <button id="btn_add_point" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-screenshot"></span></button>
-
+    <div class="row" style="padding-top: 15px;">
+        <div class="col-xs-9">
+            <svg id="arena" style="width: 100%; height: 900px;" viewBox="0 0 1800 1000"></svg>
+        </div>
+        <div class="col-xs-3">
+            <button id="btn_upscale" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-zoom-in"></span> </button>
+            <button id="btn_downscale" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-zoom-out"></span></button>
+            <span id="display_scale"></span>
+            <hr>
+            <div class="form-group">
+                <label>label</label>
+                <input id="label_block" type="text" class="form-control" value="block label">
             </div>
         </div>
     </div>
@@ -21,6 +21,9 @@
     <style>
         #arena{
             background: #fff;
+            background-image: url("/img/stade.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
             border-radius: 2px;
             display: inline-block;
             margin: 1rem;
@@ -30,7 +33,8 @@
             cursor: move;
         }
         .poly{
-            fill: #87ff87
+            fill: #87ff87;
+            fill-opacity: 0.5;
         }
         .circle{
             cursor: move;
@@ -111,6 +115,12 @@
                 poly += '<path d="'+M+' '+L+'" data-path="'+i+'" class="poly"></path>';
                 return poly;
             },
+            renderLabel: function(){
+              var text = $('#label_block').val();
+              var pos = this.poly.g();
+              var polyLabel = '<text x="'+pos.x+'" y="'+pos.y+'" font-size="25" text-anchor="middle">'+text+'</text>';
+              return polyLabel;
+            },
             render: function(){
                 var container = document.getElementById(this.target);
                 container.innerHTML = "";
@@ -118,8 +128,10 @@
                 var pointElement = this.renderPoint();
                 var pathElem = this.renderPath();
                 var polyElem = this.renderPoly();
-                block += polyElem+pathElem+pointElement+'</g>';
+                var label = this.renderLabel();
+                block += polyElem+pathElem+pointElement+label+'</g>';
                 container.innerHTML = block;
+                return true;
             }
         };
         var poly = {
@@ -215,6 +227,9 @@
         $(document).on('mouseup', function(){
             currentCircle = -1;
             currentPoly = -1;
+        });
+        $('#label_block').on('keyup', function(){
+            block.render();
         });
         $('#arena').on('mousemove', function(evt){
             var loc = cursorPoint(evt);
