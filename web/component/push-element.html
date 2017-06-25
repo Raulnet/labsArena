@@ -1,9 +1,26 @@
 <dom-module id="push-element">
+
   <template>
+    <style>
+      .list{
+        list-style: none;
+        -webkit-margin-before: 0em;
+        -webkit-margin-after: 0em;
+        -webkit-margin-start: 0px;
+        -webkit-margin-end: 0px;
+        -webkit-padding-start: 0px;
+      }
+      .list li {
+        width: 100%;
+        padding: 3px 1px;
+        border-bottom: 1px solid #ddd;
+      }
+    </style>
     <iron-input>
       <input id="nameInput" is="iron-input" placeholder="new user here..."> <button on-click="_putUser">+</button>
     </iron-input>
-    <ul>
+    <hr>
+    <ul class="list">
       <template is="dom-repeat" items="{{users}}">
         <li>{{item.name}} - <button on-click="_removeUser">-</button></li>
       </template>
