@@ -1,0 +1,44 @@
+{% extends('layout.html.twig') %}
+{% block webCompontent %}
+    <script src="{{ asset('lib/webcomponentsjs/webcomponents-lite.js') }}"></script>
+    <link rel="import" href="{{ asset('lib/polymer/polymer.html') }}">
+    <link rel="import" href="{{ asset('component/custom-element.html') }}">
+    <link rel="import" href="{{ asset('component/list-element.html') }}">
+    <link rel="import" href="{{ asset('component/bind-element.html') }}">
+    <link rel="import" href="{{ asset('component/push-element.html') }}">
+{% endblock %}
+
+{% set currentPage = "polymer" %}
+{% block content %}
+    <div class="container">
+        <h1>Polymer</h1>
+        <div id="draw_container" style="padding: 10px;">
+            <div class="row">
+                <div class="col-xs-4">
+                    <div class="well">
+                        <custom-element name="Raulnet"></custom-element>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="well">
+                        {#<list-element users="{{ users|json_encode }}"></list-element>#}
+                        <list-element></list-element>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="well">
+                        <bind-element></bind-element>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-4">
+                    <div class="well">
+                        <push-element name="Raulnet"></push-element>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

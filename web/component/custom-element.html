@@ -1,0 +1,29 @@
+<link rel="import"  href="../lib/polymer/polymer-element.html">
+
+<dom-module id="custom-element">
+    <template>
+        <div class="well">
+            <h3>hello element</h3>
+            <p>hello [[name]]</p>
+        </div>
+        <hr>
+    </template>
+
+    <script>
+        // Define the class for a new element called custom-element
+        class CustomElement extends Polymer.Element {
+            static get is() { return "custom-element"; }
+
+            static get properties() {
+                return {
+                    name: {
+                        type: String,
+                        value: "World"
+                    }
+                };
+            }
+        }
+        // Register the new element with the browser
+        customElements.define(CustomElement.is, CustomElement);
+    </script>
+</dom-module>

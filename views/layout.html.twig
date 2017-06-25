@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <title>labs{% block title %}{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="#" />
+    {% block webCompontent %}
+    {% endblock %}
     {% block stylesheets %}
             <link href="{{ asset('/lib/bootstrap/dist/css/bootstrap.css') }}" rel="stylesheet" type="text/css">
             <link href="{{ asset('/css/layout.css') }}" rel="stylesheet" type="text/css">

@@ -1,0 +1,51 @@
+<link rel="import"  href="../lib/polymer/polymer-element.html">
+
+<dom-module id="list-element">
+  <!-- Optional shadow DOM template -->
+  <template>
+    <style>
+      /* CSS rules for your element */
+    </style>
+
+    <!-- shadow DOM for your element -->
+
+    <div>{{greeting}}</div> <!-- data bindings in local DOM -->
+    <ul>
+      <template is="dom-repeat" items="[[users]]">
+        <li>[[item.name]]</li>
+      </template>
+    </ul>
+
+  </template>
+
+  <script>
+    // Define the element's API using an ES2015 class
+    class ListElement extends Polymer.Element {
+      static get is() { return 'list-element'; }
+      // Declare properties for the element's public API
+      static get properties() {
+        return {
+          greeting: {
+            type: String,
+            value: "Hello!"
+          },
+          users: {
+              type: Array,
+              value: [
+                  {"id": 1, "name": "bob"},
+                  {"id": 1, "name": "kevin"},
+                  {"id": 1, "name": "stuart"},
+                  {"id": 1, "name": "norbert"},
+              ]
+          }
+        }
+      }
+      // Add methods to the element's public API
+      greetMe() {
+        console.log(this.greeting);
+      }
+    }
+    // Register the x-custom element with the browser
+    customElements.define(ListElement.is, ListElement);
+  </script>
+</dom-module>

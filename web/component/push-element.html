@@ -1,0 +1,54 @@
+<dom-module id="push-element">
+  <template>
+    <iron-input>
+      <input id="nameInput" is="iron-input" placeholder="new user here..."> <button on-click="_putUser">+</button>
+    </iron-input>
+    <ul>
+      <template is="dom-repeat" items="{{users}}">
+        <li>{{item.name}} - <button on-click="_removeUser">-</button></li>
+      </template>
+    </ul>
+  </template>
+
+  <script>
+    // Define the element's API using an ES2015 class
+    class PushElement extends Polymer.Element {
+      static get is() { return 'push-element'; }
+      // Declare properties for the element's public API
+      static get properties() {
+        return {
+          greeting: {
+            type: String,
+            value: "Hello!"
+          },
+            users: {
+                type: Array,
+                value: [
+                    {"name": "bob"},
+                    {"name": "kevin"},
+                    {"name": "stuart"},
+                    {"name": "norbert"},
+                ]
+            }
+        }
+      }
+      // Add methods to the element's public API
+      greetMe() {
+        console.log(this.greeting);
+      }
+      _putUser(){
+          let user = {};
+          user.name = this.$.nameInput.value;
+          this.push('users', user);
+          this.$.nameInput.value = '';
+      }
+      _removeUser(e, detail){
+          var item = e.model.item;
+          var indexOf = this.users.indexOf(item);
+          this.splice('users', indexOf, 1);
+      }
+    }
+    // Register the x-custom element with the browser
+    customElements.define(PushElement.is, PushElement);
+  </script>
+</dom-module>

@@ -4,6 +4,7 @@
     <div class="row" style="padding-top: 15px;">
         <div class="col-xs-9">
             <svg id="arena" style="width: 100%; height: 900px;" viewBox="0 0 1800 1000"></svg>
+            <img id="layout_img" src="{{ asset('img/stade.jpg') }}">
         </div>
         <div class="col-xs-3">
             <button id="btn_upscale" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-zoom-in"></span> </button>
@@ -21,13 +22,12 @@
     <style>
         #arena{
             background: #fff;
-            background-image: url("/img/stade.jpg");
             background-repeat: no-repeat;
-            background-size: cover;
             border-radius: 2px;
-            display: inline-block;
-            margin: 1rem;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        #layout_img{
+            display: none;
         }
         .poly{
             cursor: move;
@@ -63,6 +63,7 @@
         var currentCircle = -1;
         var currentPoly = -1;
         var scale = 1;
+        var layoutScale = 1;
         var svg =  document.querySelector('svg');
         var pt =svg.createSVGPoint();
         var addPoint = false;
@@ -178,14 +179,17 @@
 
         // FUNCTION
         var setScale = function (newScale) {
+            console.log(this.poly.points[0]);
             scale = newScale;
             var elem = $('#arena');
             var viewBox = '0 0';
             var w = parseInt(elem.width()*scale);
             var h = parseInt(elem.height()*scale);
+
             viewBox+=' '+w+' '+h;
             elem.attr('viewBox', viewBox);
             $('#display_scale').html(scale.toFixed(2));
+            renderLayout();
         };
         var movePoint = function(pt, x, y){
             block.poly.points[pt].x = x;
@@ -205,10 +209,27 @@
             return pt.matrixTransform(svg.getScreenCTM().inverse());
         };
 
+        function renderLayout(){
+            var imgLayout = $('#layout_img');
+            var layoutWidth = imgLayout.width();
+            var layoutHeight = imgLayout.height();
+            var ratio = layoutHeight/layoutWidth;
+            var arena = $('#arena');
+            arena.css('background-image', 'url("/img/stade.jpg")');
+            var arenaWidth = arena.width();
+            var ar = arenaWidth/layoutWidth;
+            var w = (layoutWidth/(scale*100)*100)*ar;
+            var h = (layoutHeight/(scale*100)*100)*ar;
+            arena.height(w*ratio);
+            arena.css('background-size', w+'px '+h+'px');
+
+        }
+
         // INIT
         setScale(1);
         var block = polyRender;
         block.setParams(params);
+        renderLayout();
         block.render();
 
         // EVENT
@@ -219,7 +240,6 @@
             }else{
                 currentCircle = $(this).data('point');
             }
-
         });
         $('#arena').on('mousedown', '.poly', function(){
             currentPoly = 0;

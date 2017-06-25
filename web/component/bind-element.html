@@ -1,0 +1,37 @@
+<link rel="import"  href="../lib/polymer/polymer-element.html">
+<link rel="import"  href="../lib/iron-input/iron-input.html">
+
+<dom-module id="bind-element">
+  <!-- Optional shadow DOM template -->
+  <template>
+    <!-- bind to the "owner" property -->
+    <p>This is <b>[[owner]]</b>'s name-tag element.</p>
+
+    <!-- iron-input exposes a two-way bindable input value -->
+    <iron-input bind-value="{{owner}}">
+      <input is="iron-input" placeholder="Your name here...">
+    </iron-input>
+  </template>
+
+  <script>
+    // Define the element's API using an ES2015 class
+    class BindElement extends Polymer.Element {
+      static get is() { return 'bind-element'; }
+      // Declare properties for the element's public API
+      static get properties() {
+        return {
+          owner: {
+            type: String,
+            value: "Raulnet"
+          }
+        }
+      }
+      // Add methods to the element's public API
+      greetMe() {
+        console.log(this.greeting);
+      }
+    }
+    // Register the x-custom element with the browser
+    customElements.define(BindElement.is, BindElement);
+  </script>
+</dom-module>

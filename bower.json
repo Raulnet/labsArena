@@ -13,6 +13,8 @@
   ],
   "dependencies": {
     "paper": "^0.10.3",
-    "bootstrap": "^3.3.7"
+    "bootstrap": "^3.3.7",
+    "polymer": "^2.0.1",
+    "iron-input": "^2.0.0"
   }
 }

@@ -50,6 +50,11 @@
         #block_container{
             border: 2px dashed #CCC;
         }
+        #block_wrapper{
+            stroke: #CCC;
+            stroke-width: 2;
+            fill: none;
+        }
         .seat:hover{
             fill: #4da6db
         }
@@ -72,36 +77,38 @@
         var margin = 0;
         var angle = 0;
         var templateSeat = 'seat';
+        var wrapperX = 0;
+        var wrapperY = 0;
+        var wrapperPadding = 20;
     </script>
     <script>
         // FUNCTION
         var getTemplateSeat = function(seat, iSeat, iRow){
             var template = '';
-            var x =iSeat*(rayon*2)+rayon+stroke+(margin*iSeat);
+            var x =iSeat*(rayon*2)+rayon+(stroke*2)+(margin*iSeat)+wrapperX+wrapperPadding;
             var col = iSeat-column;
-            var y =(iRow*(rayon*2))+((col*col)*axe)+(margin*iRow);
+            var y =(iRow*(rayon*2))+((col*col)*axe)+(margin*iRow)+wrapperY+wrapperPadding;
             if(templateSeat == 'circle'){
                 template += '<circle class="seat" cx="'+x+'" cy="'+y+'" r="'+rayon+'" stroke="#0079ff" stroke-width="'+stroke+'" fill="#54c6ff" />';
                 var y = y-stroke+(rayon/2);
                 template += '<text x="'+x+'" y="'+y+'" font-size="'+rayon*1.2+'" text-anchor="middle" fill="#0055ff">'+seat+' </text>';
             }
             if(templateSeat == 'rect'){
-                x-=rayon;
-                y-=rayon;
+
                 template += '<rect class="seat" x="'+x+'" y="'+y+'" width="'+rayon*2+'" height="'+rayon*2+'" stroke="#0079ff" stroke-width="'+stroke+'" fill="#54c6ff" />';
                 x+=rayon;
                 y+=rayon*1.4;
-                template += '<text x="'+x+'" y="'+y+'" font-size="'+rayon*1.2+'" text-anchor="middle" fill="#0055ff">'+seat+' </text>';
+                template += '<text class="seat" x="'+x+'" y="'+y+'" font-size="'+rayon*1.2+'" text-anchor="middle" fill="#0055ff">'+seat+' </text>';
             }
             if(templateSeat == 'seat'){
                 x-=rayon;
                 y-=rayon;
                 var Xcurve = x+rayon*2;
                 var yCurve = y-20;
-                var M = 'M '+x+' '+y; // x+stroke y
-                var C =  'C '+x+' '+yCurve+', '+Xcurve+' '+yCurve+', '+Xcurve+' '+y; //'C x+stroke -rayon, 33 10, 33 30';
+                var M = 'M '+x+' '+y;
+                var C =  'C '+x+' '+yCurve+', '+Xcurve+' '+yCurve+', '+Xcurve+' '+y;
                 var L = 'l 0 30 l-40 0 l 0 -30';
-                template += '<path d="'+M+' '+C+' '+L+'" stroke="#0079ff" stroke-width="'+stroke+'" fill="#54c6ff"/>';
+                template += '<path class="seat" d="'+M+' '+C+' '+L+'" stroke="#0079ff" stroke-width="'+stroke+'" fill="#54c6ff"/>';
                 x+=rayon;
                 y+=rayon;
                 var xRotate = x+stroke;
@@ -113,21 +120,35 @@
             return template;
 
         };
+        var getWrapper = function(){
+            var wrapperWidth = 15*((rayon*2)+(stroke*2)+margin);
+            var wrapperHeight = (4*(40+wrapperY))+(wrapperPadding*2)+(margin*4);
+            var wrapper = '';
+            wrapper += '<rect stroke-dasharray="5, 5" id="block_wrapper" x="'+wrapperX+'" y="'+(wrapperY-rayon)+'" width="'+wrapperWidth+'" height="'+wrapperHeight+'"/>';
+
+            return wrapper;
+        };
         var render = function(){
             var container = $('#block_container');
             var template = '';
+            var wrapper = getWrapper();
+            var seats = '';
             // init
             container.html(template);
             var height = (block.length*40)/2;
             var width = (15*40)/2;
             template = '<g id="block_group" transform = "rotate(' + angle + ' '+ width+' '+ height+')">';
+
+
             for(var iRow = 0; iRow < block.length; iRow++){
                 var row = block[iRow];
                 for(var iSeat = 0; iSeat < row.seats.length; iSeat++){
                     var seat = row.seats[iSeat];
-                    template += getTemplateSeat(seat, iSeat, iRow);
+                    seats += getTemplateSeat(seat, iSeat, iRow);
                 }
             }
+            template+=wrapper;
+            template+=seats;
             template += '</g>';
             container.html(template);
         };

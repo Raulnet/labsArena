@@ -18,9 +18,13 @@ class AppController extends AbstractController
      * @return string
      */
     public function indexAction(Application $app){
-
+        $seats = [];
+        for($i = 0; $i < 20; $i++){
+            $seats [] = $i;
+        }
         return $this->twig($app)->render('/Home/index.html.twig', [
-
+            'seats' => $seats,
+            'rows' => [1,2,3,4,5,6,7,8,9,10]
         ]);
     }
 
@@ -43,18 +47,22 @@ class AppController extends AbstractController
             $data = $request->getContent();
             dd($data);
         }
+        $seats = [];
+        for($i = 0; $i < 20; $i++){
+            $seats [] = $i;
+        }
         $block = [
             ['label' => 'A',
-                'seats' => [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+                'seats' => $seats
             ],
             ['label' => 'B',
-                'seats' => [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+                'seats' => $seats
             ],
             ['label' => 'C',
-                'seats' => [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+                'seats' => $seats
             ],
             ['label' => 'D',
-                'seats' => [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+                'seats' => $seats
             ]
         ];
 
@@ -62,5 +70,64 @@ class AppController extends AbstractController
             'block' => $block
         ]);
     }
+
+    /**
+     * @param Application $app
+     * @param Request $request
+     * @return string
+     */
+    public function svg2Action(Application $app, Request $request){
+
+        if($request->getMethod() == 'POST'){
+            $data = $request->getContent();
+            var_dump($data);die;
+        }
+        $seats = [];
+        for($i = 0; $i < 50; $i++){
+            $seats [] = $i;
+        }
+        $block = [
+            'grid' => [
+                'block' => 'A1',
+                'groups_row' => [0],
+                'seats' => $seats,
+                'groups' => [
+                    [
+                        'rows' => ['A', 'B', 'C', 'D'],
+                        'seats' => [
+                            'A' => $seats,
+                            'B' => $seats,
+                            'C' => $seats,
+                            'D' => $seats
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        return $this->twig($app)->render('/Home/svg_v2.html.twig', [
+            'block' => json_encode($block, true)
+        ]);
+    }
+
+    /**
+     * @param Application $app
+     * @return string
+     */
+    public function polymerAction(Application $app){
+
+        $users = [
+          ['id' => 1, 'name' => "Raulnet"],
+          ['id' => 2, 'name' => "Pierre"],
+          ['id' => 3, 'name' => "Charle"],
+          ['id' => 4, 'name' => "Remi"],
+        ];
+
+
+        return $this->twig($app)->render('Home/polymer.html.twig', [
+            'users' => $users
+        ]);
+    }
+
 
 }

@@ -1,0 +1,171 @@
+{% extends('layout.html.twig') %}
+{% set currentPage = "svg_v2" %}
+{% block content %}
+    <div class="col-xs-9"><div id="draw_container"></div></div>
+    <div class="col-xs-3">
+        <div id="logger" class="well"></div>
+        <hr />
+        <div class="form-group">
+            <label class="label_slider col">margin <span id="counter_margin">0px</span></label>
+            <input type="text" class="slider_margin" value="0">
+        </div>
+    </div>
+{% endblock %}
+{% block customCSS %}
+    <link href="{{ asset('lib/slider/css/slider.css') }}" type="text/css" rel="stylesheet">
+    <style>
+        #block_container{
+            border: 2px dashed #CCC;
+        }
+        .well{
+            margin-bottom: 10px;
+            min-height: 42px;
+            padding: 10px 10px;
+        }
+        .layout_wrapper{
+            stroke: #CCC;
+            stroke-width: 2;
+            fill: none;
+        }
+        .seat:hover{
+            fill-opacity: 0.5;
+        }
+
+    </style>
+{% endblock %}
+{% block customJS %}
+    <script
+            src="https://code.jquery.com/jquery-3.2.0.min.js"
+            integrity="sha256-JAW99MJVpJBGcbzEuXk4Az05s/XyDdBomFqNlM3ic+I="
+            crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="{{ asset('lib/slider/js/bootstrap-slider.js') }}"></script>
+    <script type="application/javascript">
+        // ATTR
+        var dataBlock = {{ block|raw }};
+        console.log(dataBlock);
+    </script>
+    <script>
+        var Workshop = {
+            block: {},
+            rayon: 20,
+            paddingLayout: 10,
+            idBlockContainer: 'block_container',
+            marginSeat: 0,
+            init: function(){
+                var svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svgContainer.setAttribute('id', this.idBlockContainer);
+                svgContainer.setAttribute('style', 'width: 100%; height: 900px;');
+                svgContainer.setAttribute("viewBox", '0 0 1800 1000');
+                $('#draw_container').html(svgContainer);
+                return 0;
+            },
+            setBlock: function(block){
+                this.block = block.grid;
+            },
+            setMarginSeat: function(newMarginSeat){
+              this.marginSeat = newMarginSeat;
+            },
+            getShellSeat: function(posX, poxY, seat){
+                var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', posX );
+                circle.setAttribute('cy', poxY);
+                circle.setAttribute('r', this.rayon);
+                circle.setAttribute('class', 'seat');
+                circle.setAttribute('data-seat', seat);
+                return circle;
+            },
+            getVertex: function(posX, poxY){
+                var vertex = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                vertex.setAttribute('cx', posX );
+                vertex.setAttribute('cy', poxY);
+                vertex.setAttribute('r', 3);
+                vertex.setAttribute('fill', 'red');
+                return vertex;
+            },
+            getGroup: function(id){
+                var group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                group.setAttribute('id', id);
+                group.setAttribute('fill', '#54c6ff');
+                group.setAttribute('stroke-width', '2');
+                group.setAttribute('stroke', '#0079ff');
+                return group;
+            },
+            getLayout: function(posX, posY, width, height){
+                var rect =   document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', posX );
+                rect.setAttribute('y', posY);
+                rect.setAttribute('width', width);
+                rect.setAttribute('height', height);
+                rect.setAttribute("stroke-dasharray", "5, 5");
+                rect.setAttribute('class', 'layout_wrapper');
+                return rect;
+            },
+            render: function(){
+                var container = $('#'+this.idBlockContainer);
+                container.html("");
+
+                var listGroup = this.block.groups_row;
+                var groups = this.block.groups;
+                // groups
+                for(var i=0; i < listGroup.length; i++){
+                    var group = groups[listGroup[i]];
+                    var rows = group.rows;
+                    var seats = group.seats;
+                    var id_group = 'grp_'+i;
+                    var g = this.getGroup(id_group);
+                    container.append(g);
+                    var $group = $('#'+id_group);
+                    // rows
+                    var yLayout = 0;
+                    var xLayout = 0;
+                    var y = yLayout+this.paddingLayout;
+                    for(var l =0; l < rows.length; l++){
+                        var rowSeats = seats[rows[l]];
+                        // seats
+                        var  x = xLayout+this.paddingLayout+this.rayon;
+                        for(var s =0; s < rowSeats.length; s++){
+                            var num_seat = rowSeats[s];
+                            var seat = this.getShellSeat(x, y, num_seat);
+                            $group.append(seat);
+                            var vertex = this.getVertex(x, y);
+                            $group.append(vertex);
+                            x+= this.rayon*2+this.marginSeat;
+                        }
+                        y+= this.rayon*2+this.marginSeat;
+                    }
+                    var widthLayout = x-this.rayon+this.paddingLayout-this.marginSeat;
+                    var heightLayout = y+this.paddingLayout-this.marginSeat;
+                    var layout = this.getLayout(xLayout, yLayout-this.rayon, widthLayout, heightLayout);
+                    container.append(layout);
+                }
+
+
+            }
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            Workshop.init();
+            Workshop.setBlock(dataBlock);
+            Workshop.render();
+
+            $('.slider_margin').slider({
+                min: 0,
+                max: 20,
+                step: 1,
+                value: 0
+            }).on('slide', function(){
+                margin = parseInt($(this).val());
+                $('#counter_margin').html(margin+'px');
+                Workshop.setMarginSeat(margin);
+                Workshop.render();
+            });
+
+            $('.seat').on('click', function(){
+                $('#logger').html('click on seat '+$(this).data('seat'));
+            });
+
+        });
+    </script>
+{% endblock %}
